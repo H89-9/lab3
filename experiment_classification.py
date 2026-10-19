@@ -67,3 +67,62 @@ for actual, predicted, probability in zip(
         f"Прогноз: {predicted}, "
         f"Вероятность класса 1: {probability:.2f}"
     )
+
+
+
+from linear_models import compare_classical_models
+comparison = compare_classical_models(data)
+print("\nСРАВНЕНИЕ МОДЕЛЕЙ")
+
+def show_metrics(name, metrics):
+    print(f"\n{name}")
+    print(f"Accuracy:  {metrics.accuracy:.4f}")
+    print(f"Precision: {metrics.precision:.4f}")
+    print(f"Recall:    {metrics.recall:.4f}")
+    print(f"F1:        {metrics.f1:.4f}")
+    print(f"ROC-AUC:   {metrics.roc_auc:.4f}")
+
+
+show_metrics(
+    "Logistic Regression (sklearn)",
+    comparison.logistic_regression
+)
+
+show_metrics(
+    "Decision Tree",
+    comparison.decision_tree
+)
+
+show_metrics(
+    "KNN",
+    comparison.knn
+)
+
+
+
+import json
+from dataclasses import asdict
+from pathlib import Path
+
+path = Path("experiment_results.json")
+
+with path.open("r", encoding="utf-8") as file:
+    results = json.load(file)
+
+results["classification"] = {
+    "own_logistic": {
+        "roc_auc": float(roc_auc),
+        "accuracy": float(accuracy),
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1": float(f1)
+    },
+    "logistic_regression": asdict(comparison.logistic_regression),
+    "decision_tree": asdict(comparison.decision_tree),
+    "knn": asdict(comparison.knn)
+}
+
+with path.open("w", encoding="utf-8") as file:
+    json.dump(results, file, indent=2, ensure_ascii=False)
+
+print("\nРезультаты сохранены в experiment_results.json")
